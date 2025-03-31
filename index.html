@@ -1,55 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>»˝»ÀÀƒ◊”∆Â</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>‰∏â‰∫∫ÂõõÂ≠êÊ£ã</title>
+    <!-- ‰ΩøÁî®ÂèØÈù†ÁöÑCDNÂä†ËΩΩSocket.io -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        #game-container {
-            width: 600px;
-            margin: 0 auto;
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
-
+        #game-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            width: 640px;
+            max-width: 100%;
+            text-align: center;
+        }
         #room-input {
             margin: 20px 0;
         }
-
+        #room-code {
+            padding: 8px;
+            width: 120px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        #join-btn {
+            padding: 8px 16px;
+            background: #1a6fc9;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
         #board {
             background-color: #1a6fc9;
             display: grid;
             grid-template-columns: repeat(15, 40px);
             grid-template-rows: repeat(15, 40px);
+            gap: 2px;
+            padding: 5px;
+            margin: 0 auto;
+            border-radius: 8px;
         }
-
         .cell {
             width: 40px;
             height: 40px;
-            border-radius: 50%;
             background-color: white;
-            margin: 2px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
-
-        .red {
-            background-color: #ff5252;
+        .cell:hover {
+            opacity: 0.8;
         }
-
-        .yellow {
-            background-color: #ffeb3b;
-        }
-
-        .green {
-            background-color: #4caf50;
+        .red { background-color: #ff5252; }
+        .yellow { background-color: #ffeb3b; }
+        .green { background-color: #4caf50; }
+        #game-status {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
     <div id="game-container">
+        <h1>‰∏â‰∫∫ÂõõÂ≠êÊ£ã</h1>
         <div id="room-input">
-            <input type="text" id="room-code" placeholder=" ‰»Î∑øº‰∫≈">
-            <button id="join-btn">º”»Î”Œœ∑</button>
+            <input type="text" id="room-code" placeholder="ËæìÂÖ•4‰ΩçÊàøÈó¥Âè∑" maxlength="4">
+            <button id="join-btn">Âä†ÂÖ•Ê∏∏Êàè</button>
         </div>
         <div id="board"></div>
-        <div id="game-status">µ»¥˝º”»Î∑øº‰...</div>
+        <div id="game-status">Á≠âÂæÖÂä†ÂÖ•ÊàøÈó¥...</div>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
