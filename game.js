@@ -1,12 +1,13 @@
-const socket = io("https://spotty-special-tarragon.glitch.me/");
+const socket = io("https://spotty-special-tarragon.glitch.me"); // 替换为你的Glitch域名
 const board = document.getElementById('board');
 const roomInput = document.getElementById('room-code');
 const joinBtn = document.getElementById('join-btn');
 const gameStatus = document.getElementById('game-status');
 
 let playerColor = '';
-let currentTurn = 'red'; // 红黄绿轮流
+let currentTurn = 'red';
 let gameBoard = Array(15).fill().map(() => Array(15).fill(null));
+let isGameActive = false;
 
 // 初始化棋盘
 function initBoard() {
@@ -26,19 +27,26 @@ function initBoard() {
 // 加入房间
 joinBtn.addEventListener('click', () => {
     const roomCode = roomInput.value.trim();
-    if (roomCode) {
+    if (roomCode && roomCode.length === 4) {
         socket.emit('join-room', roomCode);
+        gameStatus.textContent = `正在加入房间 ${roomCode}...`;
+    } else {
+        gameStatus.textContent = '请输入4位房间号';
     }
 });
 
-// 服务器通信
+// Socket.io 事件监听
 socket.on('assign-color', (color) => {
     playerColor = color;
-    gameStatus.textContent = `你是${color}方，等待游戏开始...`;
+    gameStatus.textContent = `你是${color}方，等待其他玩家...`;
 });
 
 socket.on('game-start', (players) => {
-    gameStatus.textContent = `游戏开始！玩家: ${players.join(', ')}`;
+    isGameActive = true;
+    gameStatus.textContent = `游戏开始！顺序: ${players.join(' → ')}`;
+    if (currentTurn === playerColor) {
+        gameStatus.textContent += ' (轮到你了)';
+    }
 });
 
 socket.on('move-made', (data) => {
@@ -46,12 +54,15 @@ socket.on('move-made', (data) => {
     gameBoard[row][col] = color;
     updateBoard();
     currentTurn = getNextColor(color);
-    if (color !== playerColor) {
-        gameStatus.textContent = `轮到${currentTurn}方落子`;
+    if (isGameActive) {
+        gameStatus.textContent = currentTurn === playerColor 
+            ? `轮到你了 (${playerColor}方)` 
+            : `等待${currentTurn}方落子...`;
     }
 });
 
 socket.on('game-over', (winner) => {
+    isGameActive = false;
     gameStatus.textContent = `游戏结束！${winner}方获胜！`;
 });
 
@@ -60,19 +71,19 @@ function updateBoard() {
     document.querySelectorAll('.cell').forEach(cell => {
         const row = parseInt(cell.dataset.row);
         const col = parseInt(cell.dataset.col);
+        cell.className = 'cell';
         if (gameBoard[row][col]) {
-            cell.className = `cell ${gameBoard[row][col]}`;
+            cell.classList.add(gameBoard[row][col]);
         }
     });
 }
 
 // 落子逻辑
 function makeMove(row, col) {
-    if (playerColor !== currentTurn || gameBoard[row][col]) return;
-
-    socket.emit('make-move', {
-        row,
-        col,
+    if (!isGameActive || playerColor !== currentTurn || gameBoard[row][col]) return;
+    socket.emit('make-move', { 
+        row, 
+        col, 
         color: playerColor,
         room: roomInput.value.trim()
     });
