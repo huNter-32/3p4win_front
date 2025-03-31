@@ -1,14 +1,14 @@
-const socket = io();
+const socket = io("https://your-project-name.glitch.me");
 const board = document.getElementById('board');
 const roomInput = document.getElementById('room-code');
 const joinBtn = document.getElementById('join-btn');
 const gameStatus = document.getElementById('game-status');
 
 let playerColor = '';
-let currentTurn = 'red'; // ºì»ÆÂÌÂÖÁ÷
+let currentTurn = 'red'; // çº¢é»„ç»¿è½®æµ
 let gameBoard = Array(15).fill().map(() => Array(15).fill(null));
 
-// ³õÊ¼»¯ÆåÅÌ
+// åˆå§‹åŒ–æ£‹ç›˜
 function initBoard() {
     board.innerHTML = '';
     for (let row = 0; row < 15; row++) {
@@ -23,7 +23,7 @@ function initBoard() {
     }
 }
 
-// ¼ÓÈë·¿¼ä
+// åŠ å…¥æˆ¿é—´
 joinBtn.addEventListener('click', () => {
     const roomCode = roomInput.value.trim();
     if (roomCode) {
@@ -31,14 +31,14 @@ joinBtn.addEventListener('click', () => {
     }
 });
 
-// ·şÎñÆ÷Í¨ĞÅ
+// æœåŠ¡å™¨é€šä¿¡
 socket.on('assign-color', (color) => {
     playerColor = color;
-    gameStatus.textContent = `ÄãÊÇ${color}·½£¬µÈ´ıÓÎÏ·¿ªÊ¼...`;
+    gameStatus.textContent = `ä½ æ˜¯${color}æ–¹ï¼Œç­‰å¾…æ¸¸æˆå¼€å§‹...`;
 });
 
 socket.on('game-start', (players) => {
-    gameStatus.textContent = `ÓÎÏ·¿ªÊ¼£¡Íæ¼Ò: ${players.join(', ')}`;
+    gameStatus.textContent = `æ¸¸æˆå¼€å§‹ï¼ç©å®¶: ${players.join(', ')}`;
 });
 
 socket.on('move-made', (data) => {
@@ -47,15 +47,15 @@ socket.on('move-made', (data) => {
     updateBoard();
     currentTurn = getNextColor(color);
     if (color !== playerColor) {
-        gameStatus.textContent = `ÂÖµ½${currentTurn}·½Âä×Ó`;
+        gameStatus.textContent = `è½®åˆ°${currentTurn}æ–¹è½å­`;
     }
 });
 
 socket.on('game-over', (winner) => {
-    gameStatus.textContent = `ÓÎÏ·½áÊø£¡${winner}·½»ñÊ¤£¡`;
+    gameStatus.textContent = `æ¸¸æˆç»“æŸï¼${winner}æ–¹è·èƒœï¼`;
 });
 
-// ¸üĞÂÆåÅÌÏÔÊ¾
+// æ›´æ–°æ£‹ç›˜æ˜¾ç¤º
 function updateBoard() {
     document.querySelectorAll('.cell').forEach(cell => {
         const row = parseInt(cell.dataset.row);
@@ -66,7 +66,7 @@ function updateBoard() {
     });
 }
 
-// Âä×ÓÂß¼­
+// è½å­é€»è¾‘
 function makeMove(row, col) {
     if (playerColor !== currentTurn || gameBoard[row][col]) return;
 
@@ -78,7 +78,7 @@ function makeMove(row, col) {
     });
 }
 
-// ¼ÆËãÏÂÒ»¸öÍæ¼Ò
+// è®¡ç®—ä¸‹ä¸€ä¸ªç©å®¶
 function getNextColor(current) {
     const colors = ['red', 'yellow', 'green'];
     const currentIndex = colors.indexOf(current);
