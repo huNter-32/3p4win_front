@@ -1,4 +1,4 @@
-const socket = io("https://your-project-name.glitch.me");
+const socket = io("https://spotty-special-tarragon.glitch.me/");
 const board = document.getElementById('board');
 const roomInput = document.getElementById('room-code');
 const joinBtn = document.getElementById('join-btn');
