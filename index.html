@@ -91,7 +91,7 @@
         
         /* 玩家信息 */
         #player-info {
-            display: flex;
+            display: none;
             justify-content: space-around;
             width: 100%;
             margin: 15px 0;
@@ -229,8 +229,8 @@
         <!-- 模式选择界面 -->
         <div id="mode-selection">
             <h2>选择游戏模式</h2>
-            <button id="local-btn" class="mode-btn">本地三人游戏</button>
-            <button id="online-btn" class="mode-btn">远程联机游戏</button>
+            <button id="local-btn" class="mode-btn">本地游戏</button>
+            <button id="online-btn" class="mode-btn">远程联机</button>
         </div>
         
         <!-- 联机模式房间输入 -->
@@ -278,42 +278,32 @@
         
         const PLAYER_COLORS = ['red', 'yellow', 'green'];
         const COLOR_NAMES = { red: '红', yellow: '黄', green: '绿' };
-        
+
         // ================= DOM元素 =================
         const board = document.getElementById('board');
         const modeSelection = document.getElementById('mode-selection');
         const localBtn = document.getElementById('local-btn');
         const onlineBtn = document.getElementById('online-btn');
         const roomInput = document.getElementById('room-input');
-        const roomCodeInput = document.getElementById('room-code');
         const joinBtn = document.getElementById('join-btn');
         const playerInfo = document.getElementById('player-info');
-        const playerTags = document.querySelectorAll('.player-tag');
         const gameStatus = document.getElementById('game-status');
         const turnIndicator = document.getElementById('turn-indicator');
         const currentColorDot = document.getElementById('current-color-dot');
         const turnText = document.getElementById('turn-text');
-        
+
         // ================= 游戏状态 =================
         let gameMode = null;
-        let playerColor = '';
         let currentPlayerIndex = 0;
         let gameBoard = Array(15).fill().map(() => Array(15).fill(null));
-        let socket = io(); // 默认连接，可在初始化后修改
-        
+        let socket = io();
+
         // ================= 初始化游戏 =================
         function initGame() {
-            // 初始化模式选择
-            localBtn.addEventListener('click', startLocalGame);
-            onlineBtn.addEventListener('click', showOnlineInput);
-            
-            // 初始化加入房间按钮
-            joinBtn.addEventListener('click', joinRoom);
-            
-            // 初始化棋盘
             initBoard();
+            setupEventListeners();
         }
-        
+
         function initBoard() {
             board.innerHTML = '';
             for (let row = 0; row < 15; row++) {
@@ -327,53 +317,53 @@
                 }
             }
         }
-        
-        // ================= 游戏模式选择 =================
+
+        function setupEventListeners() {
+            // 本地游戏按钮
+            localBtn.addEventListener('click', () => {
+                gameMode = MODE.LOCAL;
+                startLocalGame();
+            });
+
+            // 联机游戏按钮
+            onlineBtn.addEventListener('click', () => {
+                gameMode = MODE.ONLINE;
+                modeSelection.style.display = 'none';
+                roomInput.style.display = 'flex';
+                gameStatus.textContent = '请输入房间号加入游戏';
+            });
+
+            // 加入房间按钮
+            joinBtn.addEventListener('click', joinRoom);
+        }
+
+        // ================= 游戏逻辑 =================
         function startLocalGame() {
-            gameMode = MODE.LOCAL;
             modeSelection.style.display = 'none';
             playerInfo.style.display = 'flex';
             turnIndicator.style.display = 'flex';
             board.style.display = 'grid';
             
-            // 本地模式下三个玩家都可以操作
-            playerColor = 'local';
             currentPlayerIndex = 0;
             updateTurnIndicator();
-            
             gameStatus.textContent = '本地游戏已开始，红方先手';
         }
-        
-        function showOnlineInput() {
-            gameMode = MODE.ONLINE;
-            modeSelection.style.display = 'none';
-            roomInput.style.display = 'flex';
-            gameStatus.textContent = '请输入房间号加入游戏';
-        }
-        
+
         function joinRoom() {
-            const roomCode = roomCodeInput.value.trim();
+            const roomCode = document.getElementById('room-code').value.trim();
             if (!roomCode) {
                 gameStatus.textContent = '请输入有效的房间号';
                 return;
             }
             
-            // 初始化socket连接（如果尚未连接）
-            if (!socket.connected) {
-                socket = io("https://your-server.up.railway.app"); // 替换为你的服务器地址
-                setupSocketEvents();
-            }
-            
             socket.emit('join-room', roomCode);
             gameStatus.textContent = `正在加入房间 ${roomCode}...`;
         }
-        
-        // ================= 游戏逻辑 =================
+
         function makeMove(row, col) {
             if (gameBoard[row][col]) return;
             
             if (gameMode === MODE.LOCAL) {
-                // 本地模式
                 const currentColor = PLAYER_COLORS[currentPlayerIndex];
                 gameBoard[row][col] = currentColor;
                 updateBoard();
@@ -388,17 +378,17 @@
                 
                 currentPlayerIndex = (currentPlayerIndex + 1) % 3;
                 updateTurnIndicator();
-            } else if (gameMode === MODE.ONLINE && playerColor === PLAYER_COLORS[currentPlayerIndex]) {
-                // 联机模式
+            } else if (gameMode === MODE.ONLINE) {
+                const currentColor = PLAYER_COLORS[currentPlayerIndex];
                 socket.emit('make-move', {
                     row,
                     col,
-                    color: playerColor,
-                    room: roomCodeInput.value.trim()
+                    color: currentColor,
+                    room: document.getElementById('room-code').value.trim()
                 });
             }
         }
-        
+
         function checkWin(row, col, color) {
             const directions = [
                 [0, 1],   // 水平
@@ -439,7 +429,7 @@
             
             return false;
         }
-        
+
         function updateBoard() {
             document.querySelectorAll('.cell').forEach(cell => {
                 const row = parseInt(cell.dataset.row);
@@ -451,118 +441,22 @@
                 }
             });
         }
-        
+
         function updateTurnIndicator() {
             const currentColor = PLAYER_COLORS[currentPlayerIndex];
             currentColorDot.style.backgroundColor = currentColor;
             turnText.textContent = `当前落子: ${COLOR_NAMES[currentColor]}方`;
             turnText.style.color = currentColor;
-            
-            // 更新玩家标签高亮
-            playerTags.forEach(tag => {
-                tag.classList.remove('current-turn');
-                if (tag.classList.contains(currentColor)) {
-                    tag.classList.add('current-turn');
-                }
-            });
         }
-        
+
         function resetGame() {
             gameBoard = Array(15).fill().map(() => Array(15).fill(null));
             currentPlayerIndex = 0;
             updateBoard();
             updateTurnIndicator();
         }
-        
-        // ================= 联机模式事件处理 =================
-        function setupSocketEvents() {
-            socket.on('connect', () => {
-                if (gameMode === MODE.ONLINE && roomCodeInput.value) {
-                    gameStatus.textContent = `已连接，正在加入房间 ${roomCodeInput.value}...`;
-                }
-            });
-            
-            socket.on('disconnect', () => {
-                gameStatus.textContent = '与服务器断开连接';
-            });
-            
-            socket.on('connect_error', (err) => {
-                gameStatus.textContent = `连接错误: ${err.message}`;
-            });
-            
-            socket.on('assign-color', (color) => {
-                playerColor = color;
-                gameMode = MODE.ONLINE;
-                modeSelection.style.display = 'none';
-                roomInput.style.display = 'none';
-                playerInfo.style.display = 'flex';
-                turnIndicator.style.display = 'flex';
-                board.style.display = 'grid';
-                
-                playerTags.forEach(tag => {
-                    tag.classList.remove('you');
-                    if (tag.classList.contains(color)) {
-                        tag.classList.add('you');
-                    }
-                });
-                
-                gameStatus.textContent = `你是${COLOR_NAMES[color]}方，等待游戏开始...`;
-            });
-            
-            socket.on('game-start', (players) => {
-                currentPlayerIndex = 0;
-                updateTurnIndicator();
-                gameStatus.textContent = `游戏开始！当前回合：红方`;
-                
-                // 更新玩家活跃状态
-                playerTags.forEach(tag => {
-                    const color = tag.classList[1];
-                    tag.style.opacity = players.includes(color) ? '1' : '0.3';
-                });
-            });
-            
-            socket.on('move-made', (data) => {
-                const { row, col, color } = data;
-                gameBoard[row][col] = color;
-                updateBoard();
-                
-                currentPlayerIndex = (PLAYER_COLORS.indexOf(color) + 1) % 3;
-                updateTurnIndicator();
-            });
-            
-            socket.on('game-over', (winner) => {
-                gameStatus.textContent = `游戏结束！${COLOR_NAMES[winner]}方获胜！`;
-                
-                // 标记获胜棋子
-                document.querySelectorAll('.cell').forEach(cell => {
-                    if (cell.classList.contains(winner)) {
-                        cell.classList.add('winning-cell');
-                    }
-                });
-                
-                // 高亮获胜玩家
-                playerTags.forEach(tag => {
-                    tag.classList.remove('current-turn');
-                    if (tag.classList.contains(winner)) {
-                        tag.classList.add('current-turn');
-                    }
-                });
-            });
-            
-            socket.on('room-full', () => {
-                gameStatus.textContent = '房间已满，请尝试其他房间号';
-            });
-            
-            socket.on('player-joined', (players) => {
-                playerTags.forEach(tag => {
-                    const color = tag.classList[1];
-                    tag.style.opacity = players.includes(color) ? '1' : '0.3';
-                });
-                gameStatus.textContent = `玩家加入，当前玩家: ${players.map(c => COLOR_NAMES[c]).join(', ')}`;
-            });
-        }
-        
-        // ================= 启动游戏 =================
+
+        // ================= 初始化 =================
         initGame();
     </script>
 </body>
