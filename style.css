@@ -1,0 +1,158 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+#game-container {
+    max-width: 800px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 模式选择界面 */
+#mode-selection {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.mode-btn {
+    padding: 15px 30px;
+    margin: 10px;
+    font-size: 1.2rem;
+    background-color: #bb86fc;
+    color: #121212;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.mode-btn:hover {
+    background-color: #9a67ea;
+    transform: scale(1.05);
+}
+
+/* 房间输入 */
+#room-input {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0;
+    width: 100%;
+    max-width: 400px;
+}
+
+#room-code {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 2px solid #bb86fc;
+    border-radius: 8px;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+#join-btn {
+    padding: 12px 24px;
+    background-color: #bb86fc;
+    color: #121212;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* 玩家信息 */
+#player-info {
+    display: none;
+    justify-content: space-around;
+    width: 100%;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #1e1e1e;
+    border-radius: 8px;
+}
+
+.player-tag {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 15px;
+}
+
+.player-color {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-bottom: 5px;
+}
+
+.red .player-color { background-color: #ff5252; }
+.yellow .player-color { background-color: #ffd740; }
+.green .player-color { background-color: #69f0ae; }
+
+/* 棋盘 */
+#board {
+    display: none;
+    grid-template-columns: repeat(15, 30px);
+    grid-template-rows: repeat(15, 30px);
+    gap: 2px;
+    padding: 10px;
+    background-color: #1e1e1e;
+    border-radius: 10px;
+}
+
+.cell {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #2d2d2d;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.cell:hover {
+    background-color: #3d3d3d;
+    transform: scale(1.1);
+}
+
+.cell.red { background-color: #ff5252; }
+.cell.yellow { background-color: #ffd740; }
+.cell.green { background-color: #69f0ae; }
+
+/* 当前玩家指示 */
+#turn-indicator {
+    display: none;
+    align-items: center;
+    margin: 15px 0;
+    padding: 10px 20px;
+    background-color: #1e1e1e;
+    border-radius: 8px;
+}
+
+#current-color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+    #board {
+        grid-template-columns: repeat(15, 20px);
+        grid-template-rows: repeat(15, 20px);
+    }
+    .cell {
+        width: 20px;
+        height: 20px;
+    }
+}
